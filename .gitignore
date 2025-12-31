@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+
+# Node / Python / Go junk (future-proofing)
+node_modules/
+__pycache__/
+*.log
+
+# Helm
+charts/**/charts/
+charts/**/tmp/
+
+# Terraform (if added later)
+.terraform/
+*.tfstate*
