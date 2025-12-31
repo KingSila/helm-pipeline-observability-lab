@@ -17,3 +17,9 @@ charts/**/tmp/
 # Terraform (if added later)
 .terraform/
 *.tfstate*
+
+
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
