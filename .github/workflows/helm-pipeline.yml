@@ -1,0 +1,68 @@
+name: Deploy to Azure App Service (OIDC)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+  RG: ${{ vars.AZURE_RESOURCE_GROUP }}
+  WEBAPP: ${{ vars.AZURE_WEBAPP_NAME }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      # Optional tests
+      # - name: Test
+      #   run: npm test
+
+      - name: Create deployment package
+        run: |
+          zip -r app.zip . \
+            -x "node_modules/*" ".git/*" "*.log" "app.zip"
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ensure App Settings
+        run: |
+          az webapp config appsettings set \
+            -g "$RG" -n "$WEBAPP" \
+            --settings \
+              "OTEL_SERVICE_NAME=helm-pipeline-observability-lab" \
+              "OTEL_SAMPLING_RATIO=0.1" \
+              "NODE_ENV=production"
+
+      - name: Deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.WEBAPP }}
+          package: app.zip
+
+      - name: Smoke test
+        run: |
+          curl -fsS "https://${WEBAPP}.azurewebsites.net/healthz"
+          echo "healthz ok"
