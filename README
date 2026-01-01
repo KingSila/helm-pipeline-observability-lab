@@ -1,0 +1,65 @@
+# Helm Pipeline Observability Lab
+
+A lightweight Node.js application demonstrating **end-to-end observability** on **Azure App Service**, deployed via **GitHub Actions (OIDC)** and monitored with **Azure Application Insights using OpenTelemetry**.
+
+This project intentionally moved away from AKS to reduce operational and cost overhead while preserving strong telemetry and CI/CD practices.
+
+---
+
+## Architecture Overview
+
+- **Runtime:** Node.js (Express)
+- **Hosting:** Azure App Service (Linux)
+- **CI/CD:** GitHub Actions with Azure OIDC (no secrets)
+- **Observability:** OpenTelemetry → Azure Monitor / Application Insights
+- **Region:** South Africa North
+
+---
+
+
+
+
+
+
+---
+
+## Application Endpoints
+
+| Endpoint   | Description |
+|------------|-------------|
+| `/`        | Root endpoint, returns service name and version |
+| `/healthz` | Health check endpoint (used for smoke tests) |
+| `/fail`    | Intentionally throws an error to validate telemetry |
+
+---
+
+## Observability
+
+The application uses **OpenTelemetry with Azure Monitor**.
+
+### Key features
+- Distributed traces
+- Live Metrics
+- Request + dependency tracking
+- Exception tracking
+- Configurable sampling
+
+Telemetry is enabled when the following environment variable is present:
+
+
+The service fails **gracefully** if telemetry is not configured (local/dev-friendly).
+
+---
+
+## CI/CD Pipeline
+
+Deployments are handled by **GitHub Actions** using **OIDC authentication**.
+
+### Highlights
+- No stored Azure secrets
+- Short-lived tokens issued at runtime
+- Scoped RBAC (resource-group level)
+- Automatic deployment on `main` branch push
+- Post-deploy smoke test (`/healthz`)
+
+
