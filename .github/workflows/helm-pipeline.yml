@@ -14,6 +14,10 @@ env:
   RG: ${{ vars.AZURE_RESOURCE_GROUP }}
   WEBAPP: ${{ vars.AZURE_WEBAPP_NAME }}
 
+defaults:
+  run:
+    working-directory: app
+    
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
